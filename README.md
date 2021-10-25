@@ -1,0 +1,1 @@
+# Indicador_de_artigos
