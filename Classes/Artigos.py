@@ -2,6 +2,9 @@ import os
 import json
 import nltk
 import string
+import networkx as nx
+import matplotlib.pyplot as plt
+from IPython.display import Image, display
 
 class Artigos():
     
@@ -101,25 +104,44 @@ class Artigos():
         os.chdir(self.raiz)
         return pacote
    
-    def pega_porcentagem_entre_textos(self, titulo_artigo='a vaca amarela'):
-
+    def __separa_artigos__(self, titulo_artigo, conjuto_artigos):
         
-        pacote = self.__pega_artigos__('titulo', 'texto')
-        
-        artigo_referencia = list(filter(lambda artigo: artigo['titulo'] == titulo_artigo, pacote))
+        artigo_referencia = list(filter(lambda artigo: artigo['titulo'] == titulo_artigo, conjuto_artigos))
          
         artigo_referencia = artigo_referencia[0]
         
-        demais_artigos = list(filter(lambda artigo: artigo['titulo'] != titulo_artigo, pacote))
+        demais_artigos = list(filter(lambda artigo: artigo['titulo'] != titulo_artigo, conjuto_artigos))
         
-        similaridade_com_texto = {}
+        return artigo_referencia, demais_artigos
+    
+    
+    
+    def __pega_porcentagem_entre_textos__(self, titulo_artigo='a vaca amarela'):
+
+        
+        conjuto_artigos = self.__pega_artigos__('titulo', 'texto')
+        
+        artigo_referencia, demais_artigos = self.__separa_artigos__(titulo_artigo = titulo_artigo, conjuto_artigos=conjuto_artigos)
+        
+        pacote = []
+        
         
         for outro_artigo in demais_artigos:
             
+            similaridade_com_texto = {}
             porcentagem_relacao = gerenciador.__relacao_entre_textos__(artigo_referencia['texto'], outro_artigo['texto'])
-            similaridade_com_texto[outro_artigo['titulo']] = porcentagem_relacao
-        
-        return similaridade_com_texto    
+            similaridade_com_texto['titulo'] = outro_artigo['titulo']
+            similaridade_com_texto['valor'] = porcentagem_relacao
+            pacote.append(similaridade_com_texto)
+            
+        return pacote    
+    
+    def melhor_indicacao(self, titulo_artigo='a vaca amarela'):
+    
+        api = gerenciador.__pega_porcentagem_entre_textos__(titulo_artigo = titulo_artigo)
+
+        indicacoes = sorted(api, key=lambda relacao_artigos: relacao_artigos['valor'])
+        return indicacoes[0]
     
     def adicionar_artigo(self, titulo, assunto, data, texto):
         
@@ -159,7 +181,24 @@ class Artigos():
         else:
             return api
 
-gerenciador = Artigos()
-api = gerenciador.__pega_porcentagem_entre_textos__()
-print(api)
-        
+    def criar_grafo(self, titulo_artigo='a vaca amarela'):
+    
+        grafo = nx.Graph()
+
+        lista_relacoes = self.__pega_porcentagem_entre_textos__(titulo_artigo)
+
+        arestas = []
+
+        for artigo in lista_relacoes:
+            dados_relacao = (titulo_artigo, artigo['titulo'], artigo['valor'])
+            arestas.append(dados_relacao)
+
+        grafo.add_weighted_edges_from(arestas)
+
+        pos = nx.spring_layout(grafo, seed=42)
+
+        nx.draw(grafo, pos, with_labels=True)
+
+        atributo_arestas = nx.get_edge_attributes(grafo, 'weight')
+        nx.draw_networkx_edge_labels(grafo, pos, edge_labels=atributo_arestas)
+        plt.show()
