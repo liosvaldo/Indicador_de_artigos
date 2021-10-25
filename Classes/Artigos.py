@@ -10,6 +10,7 @@ class Artigos():
         self.raiz = raiz
         self.biblioteca = biblioteca 
         nltk.download('stopwords')
+        self.campo_conteudo = ['assunto', 'texto', 'data', 'titulo']
     
         self.lista_stopwords = nltk.corpus.stopwords.words('portuguese')
         self.lista_pontuacao = string.punctuation
@@ -59,6 +60,67 @@ class Artigos():
     
         return lista_palavras
     
+    def __relacao_entre_textos__(self, texto_artigo1, texto_artigo2):
+    
+        lista_palavras1 = self.__filtro_palavras__(texto_artigo1)
+        lista_palavras2 = self.__filtro_palavras__(texto_artigo2)
+
+        lista_palavras_contidas = list(filter(lambda palavra: palavra in lista_palavras2, lista_palavras1))
+        porcentagem_palavras_contidas = len(lista_palavras_contidas)/len(lista_palavras1)
+
+        return porcentagem_palavras_contidas
+    
+    def __pega_artigos__(self, *campo_solicitado,  biblioteca = []):
+        
+        biblioteca = self.biblioteca
+    
+        pacote = []
+
+        for assunto in biblioteca:
+
+            assunto_diretorio = os.path.join(self.raiz, assunto)
+
+            for artigo in os.listdir(assunto_diretorio):
+
+                caminho_artigo = os.path.join(assunto_diretorio, artigo)
+
+                if '.ipynb_checkpoints' not in caminho_artigo:
+
+                    with open(caminho_artigo, 'r') as artigo_json:
+
+                        artigo_dicionario = json.loads(artigo_json.read())
+                        
+                        
+                       
+                        for topico in self.campo_conteudo:
+                            if topico not in campo_solicitado:
+                                artigo_dicionario.pop(topico, None)
+                    
+                        pacote.append(artigo_dicionario)
+
+        os.chdir(self.raiz)
+        return pacote
+   
+    def pega_porcentagem_entre_textos(self, titulo_artigo='a vaca amarela'):
+
+        
+        pacote = self.__pega_artigos__('titulo', 'texto')
+        
+        artigo_referencia = list(filter(lambda artigo: artigo['titulo'] == titulo_artigo, pacote))
+         
+        artigo_referencia = artigo_referencia[0]
+        
+        demais_artigos = list(filter(lambda artigo: artigo['titulo'] != titulo_artigo, pacote))
+        
+        similaridade_com_texto = {}
+        
+        for outro_artigo in demais_artigos:
+            
+            porcentagem_relacao = gerenciador.__relacao_entre_textos__(artigo_referencia['texto'], outro_artigo['texto'])
+            similaridade_com_texto[outro_artigo['titulo']] = porcentagem_relacao
+        
+        return similaridade_com_texto    
+    
     def adicionar_artigo(self, titulo, assunto, data, texto):
         
         if assunto not in self.biblioteca:
@@ -86,30 +148,18 @@ class Artigos():
         
         
     def consultar_por_data(self, reverse = False):
-        """
-        Retorna uma lista contendo todos os artigos em ordem
-        """
-        pacote = []
         
-        for assunto in self.biblioteca:
-            
-            diretorio_assunto = os.path.join(self.raiz, assunto)
-
-            for artigo in os.listdir(diretorio_assunto):
-                
-                caminho_artigo = os.path.join(diretorio_assunto, artigo)
-               
-                if '.ipynb_checkpoints' not in caminho_artigo:
-                    
-                    with open(caminho_artigo, 'r') as arquivo_json:
-                        arquivo_dicionario = json.loads(arquivo_json.read())
-                        pacote.append(arquivo_dicionario)
-                                        
-        os.chdir(self.raiz)
+        pacote = self.__pega_artigos__('data', 'titulo', 'assunto')
         api = sorted(pacote, key=lambda artigo: artigo['data'])
+        
         if reverse:
             api.reverse()
             return api
+        
         else:
             return api
+
+gerenciador = Artigos()
+api = gerenciador.__pega_porcentagem_entre_textos__()
+print(api)
         
