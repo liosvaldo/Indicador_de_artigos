@@ -1,11 +1,4 @@
-import os 
-import json
-import nltk
-import string
-import networkx as nx
-import matplotlib.pyplot as plt
-from IPython.display import Image, display
-
+from Definitions import *
 class Artigos():
     
     def __init__(self, raiz = os.getcwd(), biblioteca=['esporte', 'politica', 'tecnologia']):
@@ -92,8 +85,6 @@ class Artigos():
                     with open(caminho_artigo, 'r') as artigo_json:
 
                         artigo_dicionario = json.loads(artigo_json.read())
-                        
-                        
                        
                         for topico in self.campo_conteudo:
                             if topico not in campo_solicitado:
@@ -129,7 +120,7 @@ class Artigos():
         for outro_artigo in demais_artigos:
             
             similaridade_com_texto = {}
-            porcentagem_relacao = gerenciador.__relacao_entre_textos__(artigo_referencia['texto'], outro_artigo['texto'])
+            porcentagem_relacao = self.__relacao_entre_textos__(artigo_referencia['texto'], outro_artigo['texto'])
             similaridade_com_texto['titulo'] = outro_artigo['titulo']
             similaridade_com_texto['valor'] = porcentagem_relacao
             pacote.append(similaridade_com_texto)
@@ -141,27 +132,30 @@ class Artigos():
         api = gerenciador.__pega_porcentagem_entre_textos__(titulo_artigo = titulo_artigo)
 
         indicacoes = sorted(api, key=lambda relacao_artigos: relacao_artigos['valor'])
+        
         return indicacoes[0]
     
-    def adicionar_artigo(self, titulo, assunto, data, texto):
+    def adicionar_artigo(self, **artigo):
         
-        if assunto not in self.biblioteca:
+        print(artigo)
+        
+        if artigo['assunto'] not in self.biblioteca:
             raise AssuntoNotFound
             
         novo_artigo = {}
         
-        titulo = titulo.lower()
+        artigo['titulo'] = artigo['titulo'].lower()
         
-        titulo_sem_espacos = self.__ajuste_titulo__(titulo)
+        titulo_sem_espacos = self.__ajuste_titulo__(artigo['titulo'])
         
-        novo_artigo['titulo'] = titulo
-        novo_artigo['data'] = data
-        novo_artigo['assunto'] = assunto
-        novo_artigo['texto'] = texto
+        novo_artigo['titulo'] = artigo['titulo']
+        novo_artigo['data'] = artigo['data']
+        novo_artigo['assunto'] = artigo['assunto']
+        novo_artigo['texto'] = artigo['texto']
         
         arquivo_json = json.dumps(novo_artigo, indent = 4)
         
-        diretorio_novo_arquivo = os.path.join(self.raiz, assunto, titulo_sem_espacos + '.txt' )
+        diretorio_novo_arquivo = os.path.join(self.raiz, artigo['assunto'], titulo_sem_espacos + '.txt' )
         
         with open(diretorio_novo_arquivo, 'w') as arquivo:
             arquivo.writelines(arquivo_json)
