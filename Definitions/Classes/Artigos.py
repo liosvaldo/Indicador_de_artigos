@@ -169,14 +169,14 @@ class Artigos():
         
         for artigo in pacote:
             
-            artigo['data'] = datetime.strptime(artigo['data'], '%d/%m/%Y')
+            artigo['data'] = datetime.strptime(artigo['data'], '%Y/%m/%d')
         
                                         
         api = sorted(pacote, key=lambda artigo: artigo['data'])
         
         for artigo in api:
             
-            artigo['data'] = datetime.strftime(artigo['data'], '%d/%m/%Y')
+            artigo['data'] = datetime.strftime(artigo['data'], '%Y/%m/%d')
         
         
 #         print(api)

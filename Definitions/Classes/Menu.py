@@ -35,7 +35,7 @@ class Menu():
                 
             elif entrada_sistema == 4:
                 print('4')
-#                 self.tela_criar_grafo()
+                self.tela_criar_grafo()
                 
             elif entrada_sistema == 5:
                 deseja_sair = True
@@ -63,13 +63,13 @@ class Menu():
             
                 validado = True
                 print('''Digite o numero do assunto que você deseja salvar:
-                         1 - Esportes
+                         1 - Esporte
                          2 - Tecnologia
                          3 - Política''')
                 assunto = input('Agora, Digite o numero do assunto: ')
 
                 if assunto == '1':
-                    artigo['assunto'] = 'esportes'
+                    artigo['assunto'] = 'esporte'
 
                 elif assunto == '2':
                     artigo['assunto'] = 'tecnologia'
@@ -82,7 +82,7 @@ class Menu():
                     validado = False
             
             print('assunto do artigo salvo!')
-            artigo['data'] = input('Qual foi a data de publicação do artigo? formado(dd/mm/aaaa): ')
+            artigo['data'] = input('Qual foi a data de publicação do artigo? formado(aaaa/mm/dd): ')
             print('data adicionada!')
             print('Digite o artigo:')
             artigo['texto'] = input()
@@ -188,4 +188,31 @@ você confirma a resposta? y/n''')
             else: 
                 print('resposta incorreta, favor informar uma consulta valida!!!')
                 sem_consulta = False
+        
+    def tela_criar_grafo(self):
+        
+        print('iniciando o processo de criação do grafo!')
+        
+        validacao = False
+        
+        while not validacao: 
+        
+            validacao = True
+            
+            titulo_artigo = input("Por favor, digite o nome do artigo: ")
+            
+            saida = input(f'O titulo desejdado e: {titulo_artigo}? (y/n)')
+            
+            if saida == 'y':
+                print("Imprimindo o grafo")
+            
+            elif saida == 'n':
+                print("Favor, corrija o titulo do artigo!")
+                validacao = False
+            
+            else:
+                print("Favor, digitar um valor valido!!")
+                validacao = False
+        
+        self.classe_artigos.criar_grafo(titulo_artigo=titulo_artigo)
                 
