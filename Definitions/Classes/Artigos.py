@@ -1,4 +1,4 @@
-from Definitions import *
+from Definitions.Classes.Definitions_classes import *
 class Artigos():
     
     def __init__(self, raiz = os.getcwd(), biblioteca=['esporte', 'politica', 'tecnologia']):
@@ -129,7 +129,7 @@ class Artigos():
     
     def melhor_indicacao(self, titulo_artigo='a vaca amarela'):
     
-        api = gerenciador.__pega_porcentagem_entre_textos__(titulo_artigo = titulo_artigo)
+        api = self.__pega_porcentagem_entre_textos__(titulo_artigo = titulo_artigo)
 
         indicacoes = sorted(api, key=lambda relacao_artigos: relacao_artigos['valor'])
         
@@ -166,8 +166,20 @@ class Artigos():
     def consultar_por_data(self, reverse = False):
         
         pacote = self.__pega_artigos__('data', 'titulo', 'assunto')
+        
+        for artigo in pacote:
+            
+            artigo['data'] = datetime.strptime(artigo['data'], '%d/%m/%Y')
+        
+                                        
         api = sorted(pacote, key=lambda artigo: artigo['data'])
         
+        for artigo in api:
+            
+            artigo['data'] = datetime.strftime(artigo['data'], '%d/%m/%Y')
+        
+        
+#         print(api)
         if reverse:
             api.reverse()
             return api
